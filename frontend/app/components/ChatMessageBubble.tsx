@@ -14,7 +14,7 @@ import {
   Divider,
   Spacer,
 } from "@chakra-ui/react";
-import { sendFeedback } from "../utils/sendFeedback";
+// import { sendFeedback } from "../utils/sendFeedback";
 import { apiBaseUrl } from "../utils/constants";
 import { InlineCitation } from "./InlineCitation";
 
@@ -145,66 +145,66 @@ export function ChatMessageBubble(props: {
     };
   };
 
-  const sendUserFeedback = async (score: number, key: string) => {
-    let run_id = runId;
-    if (run_id === undefined) {
-      return;
-    }
-    if (isLoading) {
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const data = await sendFeedback({
-        score,
-        runId: run_id,
-        key,
-        feedbackId: feedback?.feedback_id,
-        comment,
-        isExplicit: true,
-      });
-      if (data.code === 200) {
-        setFeedback({ run_id, score, key, feedback_id: data.feedbackId });
-        score == 1 ? animateButton("upButton") : animateButton("downButton");
-        if (comment) {
-          setComment("");
-        }
-      }
-    } catch (e: any) {
-      console.error("Error:", e);
-      toast.error(e.message);
-    }
-    setIsLoading(false);
-  };
-  const viewTrace = async () => {
-    try {
-      setTraceIsLoading(true);
-      const response = await fetch(apiBaseUrl + "/get_trace", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          run_id: runId,
-        }),
-      });
+  // const sendUserFeedback = async (score: number, key: string) => {
+  //   let run_id = runId;
+  //   if (run_id === undefined) {
+  //     return;
+  //   }
+  //   if (isLoading) {
+  //     return;
+  //   }
+  //   setIsLoading(true);
+  //   try {
+  //     const data = await sendFeedback({
+  //       score,
+  //       runId: run_id,
+  //       key,
+  //       feedbackId: feedback?.feedback_id,
+  //       comment,
+  //       isExplicit: true,
+  //     });
+  //     if (data.code === 200) {
+  //       setFeedback({ run_id, score, key, feedback_id: data.feedbackId });
+  //       score == 1 ? animateButton("upButton") : animateButton("downButton");
+  //       if (comment) {
+  //         setComment("");
+  //       }
+  //     }
+  //   } catch (e: any) {
+  //     console.error("Error:", e);
+  //     toast.error(e.message);
+  //   }
+  //   setIsLoading(false);
+  // };
+  // const viewTrace = async () => {
+  //   try {
+  //     setTraceIsLoading(true);
+  //     const response = await fetch(apiBaseUrl + "/get_trace", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         run_id: runId,
+  //       }),
+  //     });
 
-      const data = await response.json();
+  //     const data = await response.json();
 
-      if (data.code === 400) {
-        toast.error("Unable to view trace");
-        throw new Error("Unable to view trace");
-      } else {
-        const url = data.replace(/['"]+/g, "");
-        window.open(url, "_blank");
-        setTraceIsLoading(false);
-      }
-    } catch (e: any) {
-      console.error("Error:", e);
-      setTraceIsLoading(false);
-      toast.error(e.message);
-    }
-  };
+  //     if (data.code === 400) {
+  //       toast.error("Unable to view trace");
+  //       throw new Error("Unable to view trace");
+  //     } else {
+  //       const url = data.replace(/['"]+/g, "");
+  //       window.open(url, "_blank");
+  //       setTraceIsLoading(false);
+  //     }
+  //   } catch (e: any) {
+  //     console.error("Error:", e);
+  //     setTraceIsLoading(false);
+  //     toast.error(e.message);
+  //   }
+  // };
 
   const sources = props.message.sources ?? [];
   const { filtered: filteredSources, indexMap: sourceIndexMap } =
@@ -316,55 +316,7 @@ export function ChatMessageBubble(props: {
         props.isMostRecent &&
         props.messageCompleted && (
           <HStack spacing={2}>
-            <Button
-              ref={upButtonRef}
-              size="sm"
-              variant="outline"
-              colorScheme={feedback === null ? "green" : "gray"}
-              onClick={() => {
-                if (feedback === null && props.message.runId) {
-                  sendUserFeedback(1, "user_score");
-                  animateButton("upButton");
-                  setFeedbackColor("border-4 border-green-300");
-                } else {
-                  toast.error("You have already provided your feedback.");
-                }
-              }}
-            >
-              👍
-            </Button>
-            <Button
-              ref={downButtonRef}
-              size="sm"
-              variant="outline"
-              colorScheme={feedback === null ? "red" : "gray"}
-              onClick={() => {
-                if (feedback === null && props.message.runId) {
-                  sendUserFeedback(0, "user_score");
-                  animateButton("downButton");
-                  setFeedbackColor("border-4 border-red-300");
-                } else {
-                  toast.error("You have already provided your feedback.");
-                }
-              }}
-            >
-              👎
-            </Button>
-            <Spacer />
-            <Button
-              size="sm"
-              variant="outline"
-              colorScheme={runId === null ? "blue" : "gray"}
-              onClick={async (e) => {
-                e.preventDefault();
-                await viewTrace();
-              }}
-              isLoading={traceIsLoading}
-              loadingText="🔄"
-              color="white"
-            >
-              🦜🛠️ View trace
-            </Button>
+            running locally  
           </HStack>
         )}
 

@@ -20,8 +20,11 @@ import {
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
 
-import weaviate, { ApiKey } from "weaviate-ts-client";
-import { WeaviateStore } from "@langchain/weaviate";
+// import weaviate, { ApiKey } from "weaviate-ts-client";
+// import { WeaviateStore } from "@langchain/weaviate";
+import { Chroma } from "@langchain/community/vectorstores/chroma";
+import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
+import { ChatOllama } from "@langchain/community/chat_models/ollama";
 
 export const runtime = "edge";
 
@@ -63,28 +66,39 @@ type RetrievalChainInput = {
 };
 
 const getRetriever = async () => {
-  if (
-    !process.env.WEAVIATE_INDEX_NAME ||
-    !process.env.WEAVIATE_API_KEY ||
-    !process.env.WEAVIATE_URL
-  ) {
-    throw new Error(
-      "WEAVIATE_INDEX_NAME, WEAVIATE_API_KEY and WEAVIATE_URL environment variables must be set",
-    );
-  }
+  // if (
+  //   !process.env.WEAVIATE_INDEX_NAME ||
+  //   !process.env.WEAVIATE_API_KEY ||
+  //   !process.env.WEAVIATE_URL
+  // ) {
+  //   throw new Error(
+  //     "WEAVIATE_INDEX_NAME, WEAVIATE_API_KEY and WEAVIATE_URL environment variables must be set",
+  //   );
+  // }
 
-  const client = weaviate.client({
-    scheme: "https",
-    host: process.env.WEAVIATE_URL,
-    apiKey: new ApiKey(process.env.WEAVIATE_API_KEY),
+  // const client = weaviate.client({
+  //   scheme: "https",
+  //   host: process.env.WEAVIATE_URL,
+  //   apiKey: new ApiKey(process.env.WEAVIATE_API_KEY),
+  // });
+  // const vectorstore = await WeaviateStore.fromExistingIndex(
+  //   new OpenAIEmbeddings({}),
+  //   {
+  //     client,
+  //     indexName: process.env.WEAVIATE_INDEX_NAME,
+  //     textKey: "text",
+  //     metadataKeys: ["source", "title"],
+  //   },
+  // );
+
+  //replace the Weaviate specific code with Chroma and Ollama embeddings for running locally
+  const embeddings = new OllamaEmbeddings({
+    model: "nomic-embed-text",
   });
-  const vectorstore = await WeaviateStore.fromExistingIndex(
-    new OpenAIEmbeddings({}),
+  const vectorstore = await Chroma.fromExistingCollection(
+    embeddings,
     {
-      client,
-      indexName: process.env.WEAVIATE_INDEX_NAME,
-      textKey: "text",
-      metadataKeys: ["source", "title"],
+      collectionName: process.env.COLLECTION_NAME
     },
   );
   return vectorstore.asRetriever({ k: 6 });
@@ -210,24 +224,27 @@ export async function POST(req: NextRequest) {
     const input = body.input;
     const config = body.config;
 
-    let llm;
-    if (config.configurable.llm === "openai_gpt_3_5_turbo") {
-      llm = new ChatOpenAI({
-        modelName: "gpt-3.5-turbo-1106",
-        temperature: 0,
-      });
-    } else if (config.configurable.llm === "fireworks_mixtral") {
-      llm = new ChatFireworks({
-        modelName: "accounts/fireworks/models/mixtral-8x7b-instruct",
-        temperature: 0,
-      });
-    } else {
-      throw new Error(
-        "Invalid LLM option passed. Must be 'openai' or 'mixtral'. Received: " +
-          config.llm,
-      );
-    }
-
+    // let llm;
+    // if (config.configurable.llm === "openai_gpt_3_5_turbo") {
+    //   llm = new ChatOpenAI({
+    //     modelName: "gpt-3.5-turbo-1106",
+    //     temperature: 0,
+    //   });
+    // } else if (config.configurable.llm === "fireworks_mixtral") {
+    //   llm = new ChatFireworks({
+    //     modelName: "accounts/fireworks/models/mixtral-8x7b-instruct",
+    //     temperature: 0,
+    //   });
+    // } else {
+    //   throw new Error(
+    //     "Invalid LLM option passed. Must be 'openai' or 'mixtral'. Received: " +
+    //       config.llm,
+    //   );
+    // }
+    //replace llm model to mistral for running locally
+    const llm = new ChatOllama({
+      model: "mistral"
+    });
     const retriever = await getRetriever();
     const answerChain = createChain(llm, retriever);
 

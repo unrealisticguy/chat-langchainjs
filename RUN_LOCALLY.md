@@ -1,3 +1,11 @@
+# Different with original instruction
+1. Docker -p hostport:dockerport so that Chroma and Postgres can be reached on local machine
+2. backend package.json "ingest": "node -r dotenv/config ./dist/ingest.js dotenv_config_path=.env"
+3. COLLECTION_NAME="your-collection-name" should be configured at both backend & frontend .env file
+4. LANGCHAIN_API_KEY should be set at frontend .env file due to reason here https://github.com/langchain-ai/chat-langchainjs/blob/main/LANGSMITH.md#observability
+5. add jest.config.js to frontend for loading .env variables https://nextjs.org/docs/architecture/nextjs-compiler#jest
+
+
 # Running locally
 
 If you wish to run this 100% locally, you'll need to update a few pieces of the code, and download extra software. Because this application was built on top of the LangChain framework, modifying the code to run locally is simple.
@@ -24,7 +32,7 @@ Next, navigate into the cloned repository and start the Docker container:
 
 ```shell
 cd chroma
-docker-compose up -d --build
+docker-compose up -d -p 8000:8000 --build
 ```
 
 That's it! Now, if you open OrbStack you should see a container named "Chroma" running.
@@ -42,7 +50,7 @@ docker pull postgres
 Then, run this command to start the image.
 
 ```shell
-docker run --name postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+docker run --name postgres -e POSTGRES_PASSWORD=mysecretpassword -d -p 5432:5432 postgres
 ```
 
 Change "mysecretpassword" to your desired password.
